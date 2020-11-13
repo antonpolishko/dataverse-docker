@@ -133,6 +133,7 @@ services:
       networks:
         - traefik
       image: coronawhy/dataverse:5.1.1-cv
+      #image: ekoindarto/dataverse-cvm:5.0
       container_name: dataverse
       privileged: true
       ports:
@@ -166,11 +167,12 @@ services:
       depends_on:
         - postgres
         - solr
+        - ns
       volumes:
         - dataverse-data:/usr/local/payara5/glassfish/domains/domain1/autodeploy
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.dataverse.rule=Host(`www.${traefikhost}`)"
+        - "traefik.http.routers.dataverse.rule=Host(`dataverse.${traefikhost}`)"
         - "traefik.http.services.dataverse.loadbalancer.server.port=8080"
         - "traefik.http.routers.dataverse.tls=true"
         - "traefik.http.routers.dataverse.tls.certresolver=myresolver"  
