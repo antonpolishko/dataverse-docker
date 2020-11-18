@@ -6,7 +6,15 @@ help:
 up:
 	@docker-compose --env-file s3.env up
 
-# help: 'docker-compose down' and 'docker volumes prune'
+# help: docker-compose up for vanilla 
+up-dev:
+	@docker-compose --env-file s3.env -f docker-compose-dev.yml up
+
+# help: 'docker-compose down' for vanilla
+down-dev:
+	@docker-compose --env-file s3.env -f docker-compose-dev.yml down
+
+# help: 'docker-compose down'
 down:
 	@docker-compose --env-file s3.env down
 
@@ -18,5 +26,12 @@ volume-prune:
 volume-prune-force:
 	@docker volume -y prune
 # help: 'docker-compose down' and 'docker volume prune'
-reset: down volume-prune
+reset: down down-dev volume-prune
 
+# help: 'docker exec -it dataverse asadmin'
+asadmin:
+	@docker exec -it dataverse asadmin 
+
+# help: 'docker exec -it dataverse tail -F /opt/payara/appserver/glassfish/domains/production/logs/server.log'
+payara-logs:
+	@docker exec -it dataverse tail -n 1000  -F /opt/payara/appserver/glassfish/domains/production/logs/server.log
