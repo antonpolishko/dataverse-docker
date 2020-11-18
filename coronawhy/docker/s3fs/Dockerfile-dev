@@ -1,0 +1,17 @@
+from coronawhy/dataverse:5.1.1-cv
+#from ekoindarto/dataverse-cvm:5.0
+
+USER root
+RUN apt update && apt install s3fs vim mc -y 
+COPY passwd-s3fs /opt/payara/.passwd-s3fs
+
+# TODO
+#ENV AWSACCESSKEYID
+#ENV AWSSECRETACCESSKEY
+#RUN echo $AWSSECRETACCESSKEY:$AWSSECRETACCESSKEY /opt/payara/.passwd-s3fs
+
+RUN chown payara:payara /opt/payara/.passwd-s3fs
+USER payara
+RUN chmod 600 /opt/payara/.passwd-s3fs
+
+COPY mount-s3fs.sh /opt/payara/scripts/
