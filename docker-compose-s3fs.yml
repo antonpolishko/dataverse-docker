@@ -1,0 +1,113 @@
+version: '3'
+services:
+#   postgres:
+#     networks:
+#       - traefik
+#     container_name: postgres
+#     ports:
+#       - "5432:5432"
+#     image: library/postgres:10.13
+#     restart: unless-stopped
+#     environment:
+#       - "LC_ALL=C.UTF-8"
+#       - "POSTGRES_DB=dvndb"
+#       - "POSTGRES_USER=dvnuser"
+#       - "POSTGRES_PASSWORD=dvnsecret"
+#       - "POSTGRES_PORT=5432"
+#     volumes:
+#       - database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
+
+    solr:
+      networks:
+        - traefik
+      image: ekoindarto/solr-cvm:latest
+      container_name: solr
+      privileged: true
+      ports:
+        - "8983:8983"
+      environment:
+        - "SOLR_HOST=solr"
+        - "SOLR_PORT=8983"
+        - "SOLR_JAVA_MEM=-Xms1g -Xmx1g"
+      volumes:
+        - solr-data:/opt/solr/server/solr/collection1/data
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.solr.rule=Host(`solr.${traefikhost}`)"
+        - "traefik.http.services.solr.loadbalancer.server.port=8983"
+        - "traefik.http.routers.solr.tls=true"
+        - "traefik.http.routers.solr.tls.certresolver=myresolver"  
+
+    whoami:
+      networks:
+        - traefik
+      image: "containous/whoami"
+      container_name: "whoami"
+      labels:
+        - "traefik.enable=true"
+          # - "traefik.http.routers.whoami.entrypoints=web"
+        - "traefik.http.routers.whoami.rule=Host(`whoami.${traefikhost}`)"
+        - "traefik.http.routers.whoami.tls=true"
+        - "traefik.http.routers.whoami.tls.certresolver=myresolver"  
+
+    dataverse:
+      networks:
+        - traefik
+      #image: ekoindarto/dataverse-cvm:5.0
+      #use image with baked in S3 config according to notion
+      image: coronawhy/dataverse:dev
+      container_name: dataverse
+      privileged: true
+      devices:
+        - "/dev/fuse:/dev/fuse"
+      ports:
+        #- "443:443"
+        - "4848:4848"
+        - "8085:8080"
+      environment:
+        - "CVM_SERVER_NAME=CESSDA" #Optional
+        - "CVM_SERVER_URL=http://cvm.dataverse.tk" #Optional
+        - "CVM_TSV_SOURCE=https://raw.githubusercontent.com/ekoi/speeltuin/master/resources/CMM_Custom_MetadataBlock.tsv" #Optional
+        - "WAR_FILE=https://github.com/IQSS/dataverse-docker/releases/download/5.2-cv/dataverse-5.2-cv.war"
+        - "LANG=en"
+        - "cvManager=http://"
+        - "BUNDLEPROPERTIES=Bundle.properties"
+        - "ADMIN_EMAIL=admin@localhost"
+        - "MAIL_SERVER=mailrelay"
+        - "POSTGRES_SERVER=dataverse-s3.cqyenow6w3eg.us-east-2.rds.amazonaws.com"
+        - "POSTGRES_PORT=5432"
+        - "POSTGRES_DATABASE=dvndb"
+        - "POSTGRES_USER=cwuser"
+        - "PGPASSWORD=dvnsecret"
+          #- "POSTGRES_SERVER=postgres"
+          #- "POSTGRES_PORT=5432"
+          #- "POSTGRES_DATABASE=dvndb"
+          #- "POSTGRES_USER=dvnuser"
+          #- "PGPASSWORD=dvnsecret"
+        - "SOLR_LOCATION=solr:8983"
+        - "TWORAVENS_LOCATION=NOT INSTALLED"
+        - "RSERVE_HOST=localhost"
+        - "RSERVE_PORT=6311"
+        - "RSERVE_USER=rserve"
+        - "RSERVE_PASSWORD=rserve"
+        - "JVM_OPTS='-Xmx1g -Xms1g -XX:MaxPermSize=2g -XX:PermSize=2g'"
+      depends_on:
+        - solr
+      volumes:
+        - dataverse-data:/usr/local/payara5/glassfish/domains/domain1/autodeploy
+        #- /home/ubuntu/.aws:/opt/payara/.aws
+        - /home/ubuntu/dataverse-docker/config:/opt/payara/appserver/glassfish/domains/production/config:rw
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.dataverse.rule=Host(`dataverse.${traefikhost}`)"
+        - "traefik.http.services.dataverse.loadbalancer.server.port=8080"
+        - "traefik.http.routers.dataverse.tls=true"
+        - "traefik.http.routers.dataverse.tls.certresolver=myresolver"  
+volumes:
+  database-data:
+  solr-data:
+  dataverse-data:
+
+networks:
+  traefik:
+    external: true
