@@ -1,5 +1,7 @@
 dataverse.war
 
+*passwd-s3fs
+
 #Ignoring IDE files
 .idea
 .idea/*

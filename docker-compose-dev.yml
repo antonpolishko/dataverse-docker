@@ -156,10 +156,10 @@ services:
         - "BUNDLEPROPERTIES=Bundle.properties"
         - "ADMIN_EMAIL=admin@localhost"
         - "MAIL_SERVER=mailrelay"
-        - "POSTGRES_SERVER=dataverse-s3.cqyenow6w3eg.us-east-2.rds.amazonaws.com"
+        #- "POSTGRES_SERVER=dataverse-s3.cqyenow6w3eg.us-east-2.rds.amazonaws.com"
         - "POSTGRES_SERVER=postgres"
         - "POSTGRES_PORT=5432"
-        - "POSTGRES_DATABASE=dvndb_init"
+        - "POSTGRES_DATABASE=dvndb"
         - "POSTGRES_USER=cwuser"
         - "PGPASSWORD=dvnsecret"
         - "SOLR_LOCATION=solr:8983"
@@ -174,7 +174,6 @@ services:
 #        - ns
       volumes:
         - dataverse-data:/usr/local/payara5/glassfish/domains/domain1/autodeploy
-       # - /home/ubuntu/repo/antonpolishko/dataverse-docker/config:/opt/payara/appserver/glassfish/domains/production/config:rw
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.dataverse.rule=Host(`dataverse.${traefikhost}`)"
